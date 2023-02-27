@@ -1,0 +1,7 @@
+enum GameState {
+  WAITING_FOR_BETS = 'WAITING_FOR_BETS',
+  SPINNING = 'SPINNING',
+  SHOWING_RESULTS = 'SHOWING_RESULTS',
+}
+
+export { GameState };

@@ -1,0 +1,123 @@
+<section class="section">
+  <button class="button" (click)="rotate()">Spin</button>
+  <div class="coins-container box has-background-dark">
+    <div class="selector"></div>
+
+    <ul class="coins-track" #coinsTrack>
+      <li *ngFor="let item of coins">
+        <div
+          class="box game_item"
+          [ngClass]="{
+            bronze: item.color === 'bronze',
+            silver: item.color === 'silver',
+            gold: item.color === 'gold'
+          }"
+        ></div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="columns">
+    <div class="column">
+      <h1 class="title">Current state: {{ game.gameState }}</h1>
+
+      <h1 class="is-size-5">round id: {{ game.round.id }}</h1>
+      <h1 class="subtitle">Player id: {{ player.id }}</h1>
+      <h1 class="subtitle">Balance: {{ player.balance }}</h1>
+
+      <h1 class="subtitle">Bets open {{ game.round.listeningForBets }}</h1>
+      <hr />
+    </div>
+
+    <div class="column">
+      <div class="box has-background-link">
+        <form [formGroup]="betForm" (ngSubmit)="placeBet()">
+          <div class="field">
+            <div class="control">
+              <input
+                type="text"
+                class="input"
+                id="bet_amount"
+                formControlName="betAmount"
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="control">
+              <label class="radio">
+                <input
+                  type="radio"
+                  name="betCoin"
+                  value="bronze"
+                  formControlName="betCoin"
+                />
+                <span>Bronze</span>
+              </label>
+              <label class="radio">
+                <input
+                  type="radio"
+                  name="betCoin"
+                  value="silver"
+                  formControlName="betCoin"
+                />
+                <span>Silver</span>
+              </label>
+              <label class="radio">
+                <input
+                  type="radio"
+                  name="betCoin"
+                  value="gold"
+                  formControlName="betCoin"
+                />
+                <span>Gold</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="control">
+              <button
+                class="button is-success"
+                type="submit"
+                [disabled]="
+                  !game.round.listeningForBets || !betForm.value.betAmount
+                "
+              >
+                Bet
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="box has-background-link">
+        <ul class="is-flex" style="column-gap: 1rem">
+          <li *ngFor="let bets of latestBets" class="box">
+            <h1 class="is-size-5">Amount: {{ bets.amount }}</h1>
+            <h1 class="is-size-5">Color: {{ bets.coinType }}</h1>
+            <h1 class="is-size-5">Player: {{ bets.playerId }}</h1>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="box has-background-link">
+      <h1 class="has-text-white">Round results bets</h1>
+
+      <div>
+        <ul class="is-flex" style="column-gap: 1rem" *ngIf="winners.length > 0">
+          <li *ngFor="let bet of winners">
+            <div class="box">
+              <h1 class="is-size-5">Amount: {{ bet.amount }}</h1>
+              <h1 class="is-size-5">Color: {{ bet.coinType }}</h1>
+              <h1 class="is-size-5">Player: {{ bet.playerId }}</h1>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>

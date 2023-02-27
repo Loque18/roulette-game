@@ -1,0 +1,48 @@
+.coins-container {
+  overflow: hidden;
+}
+
+.coins-track {
+  display: flex;
+  // column-gap: 1rem;
+
+  // overflow: hidden;
+
+  border: 2px solid black;
+
+  position: relative;
+}
+
+.selector {
+  position: absolute;
+  top: 0;
+  left: 50%;
+
+  width: 5px;
+  height: 100%;
+
+  background-color: white;
+
+  transform: translateX(-50%);
+
+  z-index: 1;
+}
+
+.game_item {
+  width: 80px;
+  height: 80px;
+
+  border-radius: 50%;
+
+  &.bronze {
+    background: linear-gradient(45deg, #d4af37, #c6862b);
+  }
+
+  &.silver {
+    background: linear-gradient(45deg, #c0c0c0, #a9a9a9);
+  }
+
+  &.gold {
+    background: linear-gradient(45deg, #ffd700, #ff8c00);
+  }
+}
