@@ -1,13 +1,15 @@
 import { Bet } from './game-bet';
 import { GameCoin } from './game-coin';
-import { Player } from './game-player';
+import { GameState } from './game-state';
 
 type RouletteRound = {
   id: string;
+  state: GameState;
   listeningForBets: boolean;
   bets: Bet[];
-  betsHistory: Bet[][];
-  spinNumber: number;
+  history: GameCoin[];
+  spinNumber: number | null;
+  randomNumber: number | null;
   winningCoin: GameCoin | null;
   winners: Bet[];
 };

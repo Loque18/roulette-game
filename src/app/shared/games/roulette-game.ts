@@ -11,43 +11,47 @@ import { Bet } from '../models/game-bet';
 import { RouletteRound } from '../models/game-round';
 
 const GAME_COINS: GameCoin[] = [
-  { id: 1, color: 'bronze' },
-  { id: 2, color: 'silver' },
-  { id: 3, color: 'bronze' },
-  { id: 4, color: 'silver' },
-  { id: 5, color: 'bronze' },
-  { id: 6, color: 'silver' },
-  { id: 7, color: 'bronze' },
-  { id: 8, color: 'silver' },
-  { id: 9, color: 'bronze' },
-  { id: 10, color: 'silver' },
-  { id: 11, color: 'bronze' },
-  { id: 12, color: 'silver' },
-  { id: 13, color: 'bronze' },
-  { id: 14, color: 'silver' },
-  { id: 15, color: 'gold' },
+  { id: 1, color: 'bronze', value: 1 },
+  { id: 2, color: 'silver', value: 2 },
+  { id: 3, color: 'bronze', value: 1 },
+  { id: 4, color: 'silver', value: 2 },
+  { id: 5, color: 'bronze', value: 1 },
+  { id: 6, color: 'silver', value: 2 },
+  { id: 7, color: 'bronze', value: 1 },
+  { id: 8, color: 'silver', value: 2 },
+  { id: 9, color: 'bronze', value: 1 },
+  { id: 10, color: 'silver', value: 2 },
+  { id: 11, color: 'bronze', value: 1 },
+  { id: 12, color: 'silver', value: 2 },
+  { id: 13, color: 'bronze', value: 1 },
+  { id: 14, color: 'silver', value: 2 },
+  { id: 15, color: 'gold', value: 3 },
 ];
 
 class RouletteGame {
+  constructor() {
+    this.roundSubject.next(this._roundValues);
+  }
+
   // *~~*~~*~~ private properties ~~*~~*~~* //
+
+  private _initialState = GameState.WAITING_FOR_BETS;
 
   private _roundValues: RouletteRound = {
     id: Math.random().toString(36).substring(7),
+    state: this._initialState,
     listeningForBets: false,
     bets: [],
-    betsHistory: [],
-    spinNumber: 0,
+    history: [],
+    spinNumber: null,
+    randomNumber: null,
     winningCoin: null,
     winners: [],
   };
 
   private roundSubject = new BehaviorSubject<RouletteRound>(this.roundValues);
 
-  private _initialState = GameState.WAITING_FOR_BETS;
-  private stateSubject = new BehaviorSubject<GameState>(this._initialState);
-
   // *~~*~~*~~ STREAMS ~~*~~*~~* //
-  public stateStream$ = this.stateSubject.asObservable();
   public roundStream$ = this.roundSubject.asObservable();
 
   // *~~*~~*~~ Constants ~~*~~*~~* //
@@ -68,37 +72,38 @@ class RouletteGame {
       openBets: () => this.openBets(),
       closeBets: () => this.closeBets(),
       resetBets: () => this.resetBets(),
-      storeBetsInHistory: () => this.storeBetsInHistory(),
+      // storeBetsInHistory: () => this.storeRoundInHistory(),
 
       // machine handlers
       changeState: (state: GameState) => {
         this._machine.changeState(state);
-        this.stateSubject.next(state);
-      },
 
-      // external
-      setSpinNumber: (spinNumber: number) => {
         this.roundValues = {
           ...this._roundValues,
-          spinNumber,
+          state,
         };
       },
 
-      setWinningCoin: (winningCoin: GameCoin) => {
-        this.setWinningCoin(winningCoin);
+      setResults: (results: any) => {
+        // this.roundValues = {
+        //   ...this._roundValues,
+        //   randomNumber: results.randomNumber,
+        //   winningCoin: results.winningCoin,
+        // };
       },
     },
+
     getRouletteProps: () => ({
       coins: this.COINS,
       roundValues: this._roundValues,
     }),
   });
 
-  // *~~*~~*~~ public getters ~~*~~*~~* //
-  // public get currentState(): GameState {}
-  public get currentState(): GameState {
-    return this.stateSubject.getValue();
-  }
+  // *~~*~~*~~ public getters & setters ~~*~~*~~* //
+
+  // public get round(): Readonly<RouletteRound> {
+  //   return this._roundValues;
+  // }
 
   private set roundValues(roundValues: RouletteRound) {
     this._roundValues = roundValues;
@@ -134,29 +139,18 @@ class RouletteGame {
     };
   }
 
-  private storeBetsInHistory(): void {
-    const betsHistory = [...this._roundValues.betsHistory];
+  private storeRoundInHistory(winningCoin: GameCoin): void {
+    const history = [...this._roundValues.history];
 
-    // store only the last 10 bets
-    if (betsHistory.length > 10) {
-      betsHistory.shift();
+    if (history.length > 20) {
+      history.shift();
     }
 
-    betsHistory.push(this._roundValues.bets);
+    history.push(winningCoin);
 
     this.roundValues = {
       ...this._roundValues,
-      betsHistory,
-    };
-  }
-
-  private setWinningCoin(winningCoin: GameCoin): void {
-    this.roundValues = {
-      ...this._roundValues,
-      winningCoin,
-      winners: this._roundValues.bets.filter((bet: Bet) => {
-        return bet.coinType === winningCoin.color;
-      }),
+      history,
     };
   }
 

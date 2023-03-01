@@ -1,7 +1,24 @@
+import { GameCoin } from '../../models/game-coin';
 import { GameState } from '../../models/game-state';
 import { State } from '../../state-machine/state';
 import { RouletteStateContext } from '../../state-machine/state-context';
 import { StateProps } from '../../state-machine/state-props';
+
+type Results = {
+  randomNumber: number;
+  spinNumber: number;
+  winningNumber: number;
+};
+
+/**
+ *
+ * shift array {{spin}} times
+ * [b] [s] [b] [s] [b] [G]
+ * [s] [b] [s] [b] [G] [b]
+ * [b] [s] [b] [G] [b] [s]
+ *
+ * [s] [b] [G] [b] [s] [b]
+ */
 
 class SpinningState extends State<RouletteStateContext> {
   props: StateProps = {
@@ -16,27 +33,11 @@ class SpinningState extends State<RouletteStateContext> {
 
     const { bets } = roundValues;
 
-    controller.storeBetsInHistory();
+    // controller.storeBetsInHistory();
 
-    const spin = Math.floor(Math.random() * 20) + 20;
-    controller.setSpinNumber(spin);
-    // this._gameSpin.next(spin);
+    const results: Results = this.getRoundValues(coins);
 
-    // shift array {{spin}} times
-    // [b] [s] [g]
-    // [s] [g] [b]
-    // [g] [b] [s]
-    // [b] [s] [g]
-
-    const ShiftedCoins = coins.map((coin, index) => {
-      const newIndex = (index + spin) % coins.length;
-      return coins[newIndex];
-    });
-
-    // winning coin is the first one
-    const WinningCoin = ShiftedCoins[0];
-
-    controller.setWinningCoin(WinningCoin);
+    controller.setResults(results);
 
     setTimeout(() => {
       controller.changeState(GameState.SHOWING_RESULTS);
@@ -51,6 +52,21 @@ class SpinningState extends State<RouletteStateContext> {
     const { controller } = context;
 
     controller.resetBets();
+  }
+
+  // *~~*~~*~~ self methods ~~*~~*~~* //
+
+  private getRoundValues(coins: GameCoin[]): Results {
+    const randomNumber = Math.floor(Math.random() * 9);
+    const spinNumber = Math.floor(Math.random() * 14) + 0;
+    const winningCoinIndex = (randomNumber + spinNumber) % 15;
+    const winningNumber = coins[winningCoinIndex].value;
+
+    return {
+      randomNumber,
+      spinNumber,
+      winningNumber,
+    };
   }
 }
 

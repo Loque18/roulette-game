@@ -14,35 +14,22 @@ export class GameService {
 
   private _rouletteGame: RouletteGame = new RouletteGame();
 
+  public roundValues!: RouletteRound;
+
   // *~~*~~*~~ Streams ~~*~~*~~* //
-  public onStateChange = this._rouletteGame.stateStream$;
 
-  public onRoundUpdate = this._rouletteGame.roundStream$;
-
-  private roundValues: RouletteRound = {
-    id: 'null',
-    listeningForBets: false,
-    bets: [],
-    betsHistory: [],
-    spinNumber: 0,
-    winningCoin: null,
-    winners: [],
-  };
+  public roundGameUpdate$ = this._rouletteGame.roundStream$;
 
   constructor() {
-    // this._rouletteGame.init();
-    // this.onRoundUpdate.subscribe((round: RouletteRound) => {
-    //   this.roundValues = round;
-    // });
+    this._rouletteGame.init();
+    this.roundGameUpdate$.subscribe((round: RouletteRound) => {
+      this.roundValues = round;
+    });
   }
 
   // *~~*~~*~~ getters ~~*~~*~~* //
   get coins(): GameCoin[] {
     return this._rouletteGame.COINS;
-  }
-
-  get gameState(): GameState {
-    return this._rouletteGame.currentState;
   }
 
   get round(): RouletteRound {
