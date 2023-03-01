@@ -5,6 +5,7 @@ import { GameCoin } from '../models/game-coin';
 import { RouletteGame } from '../games/roulette-game';
 import { GameState } from '../models/game-state';
 import { RouletteRound } from '../models/game-round';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -14,16 +15,16 @@ export class GameService {
 
   private _rouletteGame: RouletteGame = new RouletteGame();
 
-  public roundValues!: RouletteRound;
+  private _round: RouletteRound = this._rouletteGame.getActiveGame();
 
   // *~~*~~*~~ Streams ~~*~~*~~* //
 
   public roundGameUpdate$ = this._rouletteGame.roundStream$;
 
   constructor() {
-    this._rouletteGame.init();
-    this.roundGameUpdate$.subscribe((round: RouletteRound) => {
-      this.roundValues = round;
+    this._round = this._rouletteGame.getActiveGame();
+    this.roundGameUpdate$.subscribe((r: RouletteRound) => {
+      this._round = r;
     });
   }
 
@@ -32,8 +33,8 @@ export class GameService {
     return this._rouletteGame.COINS;
   }
 
-  get round(): RouletteRound {
-    return this.roundValues;
+  get round(): Readonly<RouletteRound> {
+    return this._round;
   }
 
   // *~~*~~*~~ Game API ~~*~~*~~* //

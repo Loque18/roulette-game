@@ -15,6 +15,7 @@ class WaitingForBetsState extends State<RouletteStateContext> {
 
     setTimeout(() => {
       context.controller.changeState(GameState.SPINNING);
+      // context.controller.updateGame();
     }, rouletteContstants.BETTING_TIME);
   }
 

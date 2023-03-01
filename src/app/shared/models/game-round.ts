@@ -5,13 +5,18 @@ import { GameState } from './game-state';
 type RouletteRound = {
   id: string;
   state: GameState;
-  listeningForBets: boolean;
+
   bets: Bet[];
   history: GameCoin[];
+
   spinNumber: number | null;
   randomNumber: number | null;
-  winningCoin: GameCoin | null;
-  winners: Bet[];
+  winningNumber: number | null;
+
+  startTime: string;
+  endTime: string;
+
+  // winners: Bet[];
 };
 
 export { RouletteRound };

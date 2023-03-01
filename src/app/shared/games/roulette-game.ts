@@ -10,6 +10,36 @@ import { Bet } from '../models/game-bet';
 
 import { RouletteRound } from '../models/game-round';
 
+import { rouletteContstants } from './contants';
+
+class RoundFactory {
+  static createRound(_history: GameCoin[] | null = null): RouletteRound {
+    const now = new Date().getTime();
+
+    const totalGameTime =
+      rouletteContstants.BETTING_TIME +
+      rouletteContstants.SPIN_TIME +
+      rouletteContstants.RESULTS_TIME;
+
+    const predictedEndOfRounnd_ms = now + totalGameTime;
+
+    return {
+      id: Math.random().toString(36).substring(7),
+      state: GameState.WAITING_FOR_BETS,
+
+      bets: [],
+      history: _history ? _history : [],
+
+      spinNumber: null,
+      randomNumber: null,
+      winningNumber: null,
+
+      startTime: now.toString(),
+      endTime: predictedEndOfRounnd_ms.toString(),
+    };
+  }
+}
+
 const GAME_COINS: GameCoin[] = [
   { id: 1, color: 'bronze', value: 1 },
   { id: 2, color: 'silver', value: 2 },
@@ -30,26 +60,18 @@ const GAME_COINS: GameCoin[] = [
 
 class RouletteGame {
   constructor() {
-    this.roundSubject.next(this._roundValues);
+    this.init();
   }
 
   // *~~*~~*~~ private properties ~~*~~*~~* //
 
   private _initialState = GameState.WAITING_FOR_BETS;
 
-  private _roundValues: RouletteRound = {
-    id: Math.random().toString(36).substring(7),
-    state: this._initialState,
-    listeningForBets: false,
-    bets: [],
-    history: [],
-    spinNumber: null,
-    randomNumber: null,
-    winningCoin: null,
-    winners: [],
-  };
+  private _roundValues: RouletteRound = RoundFactory.createRound();
 
-  private roundSubject = new BehaviorSubject<RouletteRound>(this.roundValues);
+  private takingBets = false;
+
+  private roundSubject = new BehaviorSubject<RouletteRound>(this._roundValues);
 
   // *~~*~~*~~ STREAMS ~~*~~*~~* //
   public roundStream$ = this.roundSubject.asObservable();
@@ -72,25 +94,35 @@ class RouletteGame {
       openBets: () => this.openBets(),
       closeBets: () => this.closeBets(),
       resetBets: () => this.resetBets(),
+      storeInHistory: (coin) => this.storeRoundInHistory(coin),
       // storeBetsInHistory: () => this.storeRoundInHistory(),
 
       // machine handlers
       changeState: (state: GameState) => {
-        this._machine.changeState(state);
-
         this.roundValues = {
           ...this._roundValues,
           state,
         };
+
+        this._machine.changeState(state);
       },
 
-      setResults: (results: any) => {
-        // this.roundValues = {
-        //   ...this._roundValues,
-        //   randomNumber: results.randomNumber,
-        //   winningCoin: results.winningCoin,
-        // };
+      setResults: (results) => {
+        const { winningNumber, randomNumber, spinNumber } = results;
+
+        this.roundValues = {
+          ...this._roundValues,
+          randomNumber,
+          spinNumber,
+          winningNumber,
+        };
       },
+
+      restart: () => {
+        this.roundValues = RoundFactory.createRound(this._roundValues.history);
+      },
+
+      updateGame: () => this.updateRound(),
     },
 
     getRouletteProps: () => ({
@@ -101,13 +133,12 @@ class RouletteGame {
 
   // *~~*~~*~~ public getters & setters ~~*~~*~~* //
 
-  // public get round(): Readonly<RouletteRound> {
-  //   return this._roundValues;
-  // }
-
   private set roundValues(roundValues: RouletteRound) {
     this._roundValues = roundValues;
-    this.roundSubject.next(this._roundValues);
+  }
+
+  public getActiveGame(): Readonly<RouletteRound> {
+    return this._roundValues;
   }
 
   // *~~*~~*~~ public methods ~~*~~*~~* //
@@ -119,17 +150,11 @@ class RouletteGame {
   // *~~*~~*~~ internal actions ~~*~~*~~* //
 
   private openBets(): void {
-    this.roundValues = {
-      ...this._roundValues,
-      listeningForBets: true,
-    };
+    this.takingBets = true;
   }
 
   private closeBets(): void {
-    this.roundValues = {
-      ...this._roundValues,
-      listeningForBets: false,
-    };
+    this.takingBets = false;
   }
 
   private resetBets(): void {
@@ -154,15 +179,19 @@ class RouletteGame {
     };
   }
 
+  private updateRound(): void {
+    this.roundSubject.next(this._roundValues);
+  }
+
   // *~~*~~*~~ external actions ~~*~~*~~* //
 
   public placeBet(bet: Bet): void {
-    if (this._roundValues.listeningForBets) {
+    if (this.takingBets) {
       this.roundValues = {
         ...this._roundValues,
         bets: [...this._roundValues.bets, bet],
       };
-    }
+    } else throw new Error('Game is not accepting bets right now');
   }
 }
 

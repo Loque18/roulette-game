@@ -26,24 +26,25 @@ class ResultsState extends State<RouletteStateContext> {
 
   onEnter(context: RouletteStateContext): void {
     const { controller } = context;
-    // select winners
-    // get last bets from the history
-    // const latestBets = this.betsHistory[this.betsHistory.length - 1];
-    // // filter bets by winning coin
-    // const winnerBets = latestBets.filter(
-    //   (bet: Bet) => bet.coinType === WinningCoin.color
-    // );
-    // Stream winners
-    // this.winners.next(winnerBets);
+
+    const { coins, roundValues } = context.getRouletteProps();
 
     setTimeout(() => {
       controller.changeState(GameState.WAITING_FOR_BETS);
     }, 2000);
+
+    controller.updateGame();
   }
 
   update(): void {}
 
-  onExit(): void {}
+  onExit(context: RouletteStateContext): void {
+    const { controller } = context;
+
+    controller.restart();
+
+    controller.updateGame();
+  }
 }
 
 export { ResultsState };
