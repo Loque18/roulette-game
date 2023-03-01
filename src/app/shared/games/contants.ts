@@ -1,7 +1,8 @@
 const onesec: number = 1000;
 
 const rouletteContstants = {
-  BETTING_TIME: 10 * onesec,
+  START_TIME: 200,
+  BETTING_TIME: 8 * onesec,
   SPIN_TIME: 5 * onesec,
   RESULTS_TIME: 5 * onesec,
 };

@@ -16,7 +16,7 @@ type RouletteRound = {
   startTime: string;
   endTime: string;
 
-  // winners: Bet[];
+  winners: Bet[];
 };
 
 export { RouletteRound };

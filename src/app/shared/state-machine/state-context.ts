@@ -1,3 +1,4 @@
+import { Bet } from '../models/game-bet';
 import { GameCoin } from '../models/game-coin';
 import { RouletteRound } from '../models/game-round';
 import { GameState } from '../models/game-state';
@@ -21,6 +22,8 @@ type RouletteStateContext = {
     changeState: (stateName: GameState) => void;
 
     setResults: (results: Results) => void;
+
+    setWinners: (winnners: Bet[]) => void;
 
     restart: () => void;
 

@@ -11,6 +11,7 @@ import { Bet } from '../models/game-bet';
 import { RouletteRound } from '../models/game-round';
 
 import { rouletteContstants } from './contants';
+import { GameStartState } from './states/start-state';
 
 class RoundFactory {
   static createRound(_history: GameCoin[] | null = null): RouletteRound {
@@ -25,7 +26,7 @@ class RoundFactory {
 
     return {
       id: Math.random().toString(36).substring(7),
-      state: GameState.WAITING_FOR_BETS,
+      state: GameState.GAME_START,
 
       bets: [],
       history: _history ? _history : [],
@@ -36,6 +37,8 @@ class RoundFactory {
 
       startTime: now.toString(),
       endTime: predictedEndOfRounnd_ms.toString(),
+
+      winners: [],
     };
   }
 }
@@ -65,7 +68,7 @@ class RouletteGame {
 
   // *~~*~~*~~ private properties ~~*~~*~~* //
 
-  private _initialState = GameState.WAITING_FOR_BETS;
+  private _initialState = GameState.GAME_START;
 
   private _roundValues: RouletteRound = RoundFactory.createRound();
 
@@ -81,6 +84,7 @@ class RouletteGame {
 
   // *~~*~~*~~ State machine ~~*~~*~~* //
   private _states = {
+    [GameState.GAME_START]: new GameStartState(),
     [GameState.WAITING_FOR_BETS]: new WaitingForBetsState(),
     [GameState.SPINNING]: new SpinningState(),
     [GameState.SHOWING_RESULTS]: new ResultsState(),
@@ -115,6 +119,13 @@ class RouletteGame {
           randomNumber,
           spinNumber,
           winningNumber,
+        };
+      },
+
+      setWinners: (winners: Bet[]) => {
+        this.roundValues = {
+          ...this._roundValues,
+          winners,
         };
       },
 
@@ -180,6 +191,8 @@ class RouletteGame {
   }
 
   private updateRound(): void {
+    console.log('updating round', this._roundValues);
+
     this.roundSubject.next(this._roundValues);
   }
 

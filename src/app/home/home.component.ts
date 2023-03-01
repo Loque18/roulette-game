@@ -1,11 +1,13 @@
+import { Component, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import {
-  Component,
-  ElementRef,
-  ViewChild,
-  AfterViewInit,
-  OnInit,
-} from '@angular/core';
-import { trigger, state, transition } from '@angular/animations';
+  trigger,
+  state,
+  style,
+  transition,
+  animate,
+  query,
+  animateChild,
+} from '@angular/animations';
 import { GameService } from '../shared/services/game.service';
 
 import { GameCoin } from '../shared/models/game-coin';
@@ -14,6 +16,40 @@ import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { Player } from '../shared/models/game-player';
 import { Bet } from '../shared/models/game-bet';
 import { RouletteRound } from '../shared/models/game-round';
+
+enum SpinState {
+  RESTING = 'resting',
+  SPINNING = 'spinning',
+  BACK_TO_CENTER = 'backToCenter',
+}
+
+// const anim = trigger('spinRouletteAnim', [
+//   state('resting', style({ transform: 'translateX({{ initPos }}px)' }), {
+//     params: {
+//       initPos: 0,
+//     },
+//   }),
+//   state('spinning', style({ transform: 'translateX({{ spinPos }}px)' }), {
+//     params: { spinPos: 0 },
+//   }),
+//   state(
+//     'backToCenter',
+//     style({ transform: 'translateX( {{winningPos}}  px)' }),
+//     {
+//       params: { winningPos: 0 },
+//     }
+//   ),
+
+//   transition(':enter', []),
+//   transition('resting => spinning', [
+//     animate('{{ spinTime }}ms cubic-bezier(0.12, 0.8, 0.38, 1)'),
+//   ]),
+//   transition('spinning => backToCenter', [
+//     // dynamic duration provided from outside
+//     animate('{{ returnTime }}ms cubic-bezier(0.12, 0.8, 0.38, 1)'),
+//   ]),
+//   transition(':leave', [animate('0s cubic-bezier(0.12, 0.8, 0.38, 1)')]),
+// ]);
 
 enum Coin {
   BRONZE = 'bronze',
@@ -53,35 +89,15 @@ export class HomeComponent implements AfterViewInit {
     this.game.roundGameUpdate$.subscribe((round: RouletteRound) => {
       if (round.state === GameState.SPINNING) {
         const { randomNumber, spinNumber } = round;
-        this.rotate(randomNumber as number, spinNumber as number);
+        this.spin(randomNumber as number, spinNumber as number);
       }
     });
   }
 
-  // private simulateServerResponse(): unknown {
-  //   const randomNumber = Math.floor(Math.random() * 9);
-  //   const spinNumber = Math.floor(Math.random() * 14) + 0;
+  // *~~*~~*~~ animation ~~*~~*~~* //
+  protected animationState = SpinState.RESTING;
 
-  //   const winningIndex = (randomNumber + spinNumber) % 15;
-
-  //   const m: { [key: string]: number } = { b: 1, s: 2, g: 3 };
-
-  //   // prettier-ignore
-  //   const arr: string[] = ['b', 's', 'b', 's', 'b', 's', 'b', 's', 'b', 's', 'b', 's', 'b', 's', 'g'];
-
-  //   const winningCoin: string = arr[winningIndex];
-
-  //   const winningNumber: number = m[winningCoin];
-
-  //   return {
-  //     randomNumber,
-  //     winningNumber,
-  //     winningIndex,
-  //     spinNumber,
-  //   };
-  // }
-
-  private rotate(randomNumber: number, spinNumber: number): void {
+  private spin(randomNumber: number, spinNumber: number): void {
     /**
      * there are 15 coins in total, 7 b, 7s and 1g, along a track, which is repeated 7 times
      * each coin has the same odds of being selected (1/15)
@@ -112,14 +128,12 @@ export class HomeComponent implements AfterViewInit {
     const s = Math.random() > 0.5 ? 1 : -1;
     const randomOffset = s * Math.floor(Math.random() * (this.squareWidth / 2));
 
-    const temp =
+    const winningPosition =
       HALFWIDTH_CONTAINER -
       ONE_TRACK_WIDTH -
       ALL_TRACKS_WIDH -
       OFFSET_TO_WINNING_COIN -
       this.squareWidth / 2;
-
-    const winningPosition = temp;
 
     // 3
     track.style.transitionDuration = '3s';
@@ -146,16 +160,6 @@ export class HomeComponent implements AfterViewInit {
   }
 
   private moveBackToStart(winningIndex: number): void {
-    // var r = this.tileNumbers.length * this.tileWidth; // width of one track
-    // (r +=
-    //   this.tileNumbers.indexOf(parseInt(n)) * this.tileWidth +
-    //   this.tileWidth / 2), // offset to winning tile + half tile
-    //   (r -= Math.floor(
-    //     document.querySelector('.tiles-wrapper').offsetWidth / 2
-    //   )), // half with of the container
-    //   (this.offsetWidth = -1 * r); // change sign
-    // var o = 'transform: translate3d(' + this.offsetWidth + 'px, 0, 0);';
-
     const track: HTMLElement = this.coinsTrack.nativeElement;
 
     const ONE_TRACK_WIDTH = this.game.coins.length * this.squareWidth;

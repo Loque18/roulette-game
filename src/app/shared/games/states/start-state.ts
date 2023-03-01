@@ -5,28 +5,26 @@ import { StateProps } from '../../state-machine/state-props';
 
 import { rouletteContstants } from '../contants';
 
-class WaitingForBetsState extends State<RouletteStateContext> {
+class GameStartState extends State<RouletteStateContext> {
   props: StateProps = {
-    name: GameState.WAITING_FOR_BETS,
+    name: GameState.GAME_START,
   };
 
   onEnter(context: RouletteStateContext): void {
-    context.controller.openBets();
+    const { controller } = context;
 
-    console.log('cambie');
+    controller.restart();
 
-    context.controller.updateGame();
+    controller.updateGame();
 
     setTimeout(() => {
-      context.controller.changeState(GameState.SPINNING);
-    }, rouletteContstants.BETTING_TIME);
+      context.controller.changeState(GameState.WAITING_FOR_BETS);
+    }, 200);
   }
 
   update(): void {}
 
-  onExit(context: RouletteStateContext): void {
-    context.controller.closeBets();
-  }
+  onExit(): void {}
 }
 
-export { WaitingForBetsState };
+export { GameStartState };

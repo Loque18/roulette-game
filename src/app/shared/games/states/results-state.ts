@@ -2,6 +2,7 @@ import { GameState } from '../../models/game-state';
 import { State } from '../../state-machine/state';
 import { RouletteStateContext } from '../../state-machine/state-context';
 import { StateProps } from '../../state-machine/state-props';
+import { rouletteContstants } from '../contants';
 
 // private showResults(WinningCoin: GameCoin) {
 //   this._gameState.next(GameState.SHOWING_RESULTS);
@@ -30,21 +31,15 @@ class ResultsState extends State<RouletteStateContext> {
     const { coins, roundValues } = context.getRouletteProps();
 
     setTimeout(() => {
-      controller.changeState(GameState.WAITING_FOR_BETS);
-    }, 2000);
+      controller.changeState(GameState.GAME_START);
+    }, rouletteContstants.RESULTS_TIME);
 
     controller.updateGame();
   }
 
   update(): void {}
 
-  onExit(context: RouletteStateContext): void {
-    const { controller } = context;
-
-    controller.restart();
-
-    controller.updateGame();
-  }
+  onExit(): void {}
 }
 
 export { ResultsState };

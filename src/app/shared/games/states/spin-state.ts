@@ -1,3 +1,4 @@
+import { Bet } from '../../models/game-bet';
 import { GameCoin } from '../../models/game-coin';
 import { GameState } from '../../models/game-state';
 import { State } from '../../state-machine/state';
@@ -34,7 +35,14 @@ class SpinningState extends State<RouletteStateContext> {
 
     const results: Results = this.getRoundResults(coins);
 
+    const winningBets = this.computeWinningBets(
+      context.getRouletteProps().roundValues.bets,
+      results
+    );
+
     controller.setResults(results);
+
+    controller.setWinners(winningBets);
 
     setTimeout(() => {
       controller.changeState(GameState.SHOWING_RESULTS);
@@ -62,6 +70,22 @@ class SpinningState extends State<RouletteStateContext> {
       spinNumber,
       winningNumber,
     };
+  }
+
+  private computeWinningBets(roundBets: Bet[], results: Results): Bet[] {
+    const { winningNumber } = results;
+
+    const c: { [key: string]: number } = {
+      bronze: 1,
+      silver: 2,
+      gold: 3,
+    };
+
+    const winningBets = roundBets.filter((bet: Bet) => {
+      return c[bet.coinType] === winningNumber;
+    });
+
+    return winningBets;
   }
 }
 

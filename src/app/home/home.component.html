@@ -2,6 +2,8 @@
   <div class="coins-container box has-background-dark">
     <div class="selector"></div>
 
+    <!-- <button (click)="spin()">spin</button> -->
+
     <ul class="coins-track" #coinsTrack>
       <li *ngFor="let item of coinsTracks">
         <div
@@ -24,8 +26,13 @@
       <h1 class="subtitle">Player id: {{ player.id }}</h1>
       <h1 class="subtitle">Balance: {{ player.balance }}</h1>
 
-      <h1 class="subtitle">
-        Bets open {{ game.round.state !== "WAITING_FOR_BETS" }}
+      <h1
+        class="subtitle"
+        [ngClass]="{
+          'has-text-danger': game.round.state !== 'WAITING_FOR_BETS'
+        }"
+      >
+        Bets open {{ game.round.state === "WAITING_FOR_BETS" }}
       </h1>
       <hr />
     </div>
@@ -110,15 +117,16 @@
       <h1 class="has-text-white">Round results bets</h1>
 
       <div>
-        <!-- <ul class="is-flex" style="column-gap: 1rem" *ngIf="winners.length > 0">
-          <li *ngFor="let bet of winners">
+        <ul class="is-flex" style="column-gap: 1rem">
+          <li *ngFor="let bet of game.round.winners">
             <div class="box">
               <h1 class="is-size-5">Amount: {{ bet.amount }}</h1>
               <h1 class="is-size-5">Color: {{ bet.coinType }}</h1>
-              <h1 class="is-size-5">Player: {{ bet.playerId }}</h1>
+              <h1 class="is-size-5">PlayerId: {{ bet.player.id }}</h1>
+              <h1 class="is-size-5">Player: {{ bet.player.name }}</h1>
             </div>
           </li>
-        </ul> -->
+        </ul>
       </div>
     </div>
   </div>
